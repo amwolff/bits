@@ -1,3 +1,4 @@
+// Package testutil provides utility functions for testing.
 package testutil
 
 import (
@@ -17,6 +18,7 @@ func (l logWriter) Write(p []byte) (n int, err error) {
 	return len(s), nil
 }
 
+// NewTestLogger returns a new slog.Logger that writes to the given testing.T.
 func NewTestLogger(t *testing.T) *slog.Logger {
 	return slog.New(slog.NewTextHandler(logWriter{t: t}, &slog.HandlerOptions{
 		AddSource: true,
@@ -24,6 +26,7 @@ func NewTestLogger(t *testing.T) *slog.Logger {
 	}))
 }
 
+// RandomString returns a random string of the given length.
 func RandomString(n int) string {
 	b := make([]byte, n)
 	_, err := rand.Read(b)

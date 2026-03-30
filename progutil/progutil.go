@@ -1,3 +1,4 @@
+// Package progutil provides utility functions for running programs.
 package progutil
 
 import (
@@ -12,6 +13,7 @@ import (
 	"github.com/zeebo/clingy"
 )
 
+// Global holds global configuration for the program.
 type Global struct {
 	stdout io.Writer
 	Log    *slog.Logger
@@ -54,6 +56,7 @@ func (w *Global) setup(cmds clingy.Commands) {
 	w.Log = slog.New(h)
 }
 
+// Main runs the program with the given name and commands.
 func Main(name string, cmds ...func(g Global) (name string, desc string, cmd clingy.Command)) {
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer cancel()
@@ -78,6 +81,7 @@ func Main(name string, cmds ...func(g Global) (name string, desc string, cmd cli
 		}
 	}
 	if !ok || err != nil {
+		cancel()
 		os.Exit(1)
 	}
 }
