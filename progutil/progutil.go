@@ -58,6 +58,12 @@ func (w *Global) setup(cmds clingy.Commands) {
 
 // Main runs the program with the given name and commands.
 func Main(name string, cmds ...func(g Global) (name string, desc string, cmd clingy.Command)) {
+	if !main(name, cmds...) {
+		os.Exit(1)
+	}
+}
+
+func main(name string, cmds ...func(g Global) (name string, desc string, cmd clingy.Command)) bool {
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer cancel()
 
@@ -80,8 +86,6 @@ func Main(name string, cmds ...func(g Global) (name string, desc string, cmd cli
 			fmt.Fprintf(os.Stderr, "%+v\n", err)
 		}
 	}
-	if !ok || err != nil {
-		cancel()
-		os.Exit(1)
-	}
+
+	return ok && err == nil
 }
