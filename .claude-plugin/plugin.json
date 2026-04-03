@@ -1,0 +1,13 @@
+{
+  "name": "bits",
+  "description": "Dark arts of database sorcery and other forbidden knowledge for Claude Code",
+  "version": "0.1.0",
+  "author": {
+    "name": "Artur M. Wolff"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/amwolff/bits.git"
+  },
+  "license": "MIT"
+}
