@@ -1,0 +1,22 @@
+{
+  "name": "bits",
+  "owner": {
+    "name": "Artur M. Wolff",
+    "email": "artur.m.wolff@gmail.com"
+  },
+  "metadata": {
+    "description": "Dark arts of database sorcery and other forbidden knowledge for Claude Code",
+    "version": "0.1.0"
+  },
+  "plugins": [
+    {
+      "name": "amwolff-grimoire",
+      "description": "Go database skills (DBX, simplemigrations) and code review agents (API client, code quality, security)",
+      "source": "./",
+      "skills": [
+        "./skills/dbx",
+        "./skills/simplemigrations"
+      ]
+    }
+  ]
+}

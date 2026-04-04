@@ -1,7 +1,7 @@
 ---
 name: dbx
 description: Use when working with DBX database schema definitions, generating Go database bindings, creating models, or writing CRUD operations. DBX is a code generation tool that creates Go code for Postgres and SQLite databases.
-argument-hint: [create|read|update|delete|model|schema|help]
+argument-hint: "[create|read|update|delete|model|schema|help]"
 ---
 
 # DBX Database Code Generator

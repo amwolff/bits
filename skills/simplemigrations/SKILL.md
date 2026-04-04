@@ -1,7 +1,7 @@
 ---
 name: simplemigrations
 description: Use when working with database migrations in Go using simplemigrations, creating migration adapters, integrating migrations with dbx-generated code, or setting up schema versioning. Covers MigrateToLatest, MigrateToLatestWithSchema, and the adapter pattern for dbx integration.
-argument-hint: [migrate|adapter|dbx-integration|schema-version|help]
+argument-hint: "[migrate|adapter|dbx-integration|schema-version|help]"
 ---
 
 # simplemigrations - Database Migration Library
