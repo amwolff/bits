@@ -13,6 +13,28 @@
       "name": "amwolff-grimoire",
       "description": "Go database skills (DBX, simplemigrations) and code review agents (API client, code quality, security)",
       "source": "./plugins/amwolff-grimoire"
+    },
+    {
+      "name": "chrome-devtools",
+      "description": "Chrome DevTools MCP — headless, telemetry-free",
+      "source": {
+        "source": "github",
+        "repo": "ChromeDevTools/chrome-devtools-mcp"
+      },
+      "strict": false,
+      "mcpServers": {
+        "chrome-devtools": {
+          "command": "npx",
+          "args": [
+            "chrome-devtools-mcp@latest",
+            "--headless",
+            "--no-usage-statistics",
+            "--no-performance-crux",
+            "--no-update-checks",
+            "--isolated"
+          ]
+        }
+      }
     }
   ]
 }
