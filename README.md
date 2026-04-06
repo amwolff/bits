@@ -9,18 +9,14 @@ Go utilities and a [Claude Code plugin](https://code.claude.com/docs/en/plugins)
 /plugin install amwolff-grimoire@bits
 ```
 
-### Recommended companion plugins
+### Recommended extras
 
-```
-/plugin marketplace add ChromeDevTools/chrome-devtools-mcp
-/plugin install chrome-devtools-mcp@chrome-devtools-plugins
-
-/plugin install gopls-lsp@claude-plugins-official
-```
-
-The grimoire includes a `chrome-devtools-private` MCP server (headless, telemetry-free). After installing `chrome-devtools-mcp`, disable its default server and use the private one instead.
-
-`gopls-lsp` requires [`gopls`](https://pkg.go.dev/golang.org/x/tools/gopls).
+- **gopls-lsp** — `/plugin install gopls-lsp@claude-plugins-official` (requires [`gopls`](https://pkg.go.dev/golang.org/x/tools/gopls))
+- **[Playwright CLI](https://github.com/microsoft/playwright-cli)** — browser automation for coding agents
+  ```
+  npm install -g @playwright/cli@latest
+  cd && playwright-cli install-browser --with-deps --only-shell && playwright-cli install --skills
+  ```
 
 ## License
 
