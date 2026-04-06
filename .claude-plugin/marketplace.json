@@ -16,14 +16,13 @@
     },
     {
       "name": "chrome-devtools",
-      "description": "Chrome DevTools MCP — headless, telemetry-free",
+      "description": "Reliable automation, in-depth debugging, and performance analysis in Chrome using Chrome DevTools and Puppeteer (+ a private MCP server for Claude Code)",
       "source": {
         "source": "github",
         "repo": "ChromeDevTools/chrome-devtools-mcp"
       },
-      "strict": false,
       "mcpServers": {
-        "chrome-devtools": {
+        "chrome-devtools-private": {
           "command": "npx",
           "args": [
             "chrome-devtools-mcp@latest",
