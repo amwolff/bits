@@ -13,27 +13,6 @@
       "name": "amwolff-grimoire",
       "description": "Go database skills (DBX, simplemigrations) and code review agents (API client, code quality, security)",
       "source": "./plugins/amwolff-grimoire"
-    },
-    {
-      "name": "chrome-devtools",
-      "description": "Reliable automation, in-depth debugging, and performance analysis in Chrome using Chrome DevTools and Puppeteer (+ a private MCP server for Claude Code)",
-      "source": {
-        "source": "github",
-        "repo": "ChromeDevTools/chrome-devtools-mcp"
-      },
-      "mcpServers": {
-        "chrome-devtools-private": {
-          "command": "npx",
-          "args": [
-            "chrome-devtools-mcp@latest",
-            "--headless",
-            "--no-usage-statistics",
-            "--no-performance-crux",
-            "--no-update-checks",
-            "--isolated"
-          ]
-        }
-      }
     }
   ]
 }
