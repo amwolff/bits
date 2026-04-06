@@ -1,0 +1,5 @@
+{
+  "name": "amwolff-grimoire",
+  "description": "Go database skills (DBX, simplemigrations) and code review agents (API client, code quality, security)",
+  "version": "0.1.0"
+}

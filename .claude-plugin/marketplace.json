@@ -12,11 +12,7 @@
     {
       "name": "amwolff-grimoire",
       "description": "Go database skills (DBX, simplemigrations) and code review agents (API client, code quality, security)",
-      "source": "./",
-      "skills": [
-        "./skills/dbx",
-        "./skills/simplemigrations"
-      ]
+      "source": "./plugins/amwolff-grimoire"
     }
   ]
 }
