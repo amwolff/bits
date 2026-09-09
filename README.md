@@ -1,6 +1,24 @@
 # bits
 
-Go utilities and a [Claude Code plugin](https://code.claude.com/docs/en/plugins) marketplace.
+Environment bootstrap, Go utilities and a [Claude Code plugin](https://code.claude.com/docs/en/plugins) marketplace.
+
+## Setup
+
+```
+curl -fsSL https://raw.githubusercontent.com/amwolff/bits/main/setup.sh | bash -s -- \
+  --name "<name>" \
+  --email <email> \
+  --auth-key "ssh-ed25519 AAAA... <comment>" \
+  --signing-key "ssh-ed25519 AAAA..."
+```
+
+Idempotent — `--dry-run` shows what would change.
+`--mode devcontainer --target .` writes a `.devcontainer/` that runs it on create instead.
+The `packages` and `awscli` modules install through `sudo`.
+See `setup.sh --help` for the rest.
+
+The lists it installs — `setup/aliases.sh` and `setup/packages.txt` — are read from a checkout, else fetched at `--ref`.
+Per-machine additions go in `~/.config/bits/aliases.local.sh`, which bits never touches.
 
 ## Install
 

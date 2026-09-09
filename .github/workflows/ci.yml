@@ -28,3 +28,47 @@ jobs:
           go-version: ${{ env.GO_VERSION }}
       - name: Run tests
         run: go test -race ./...
+  shell:
+    runs-on: ubuntu-latest
+    env:
+      KEY: ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIM+Q3ERQ/8ok75tJEHfbMvImoerogAyF1vz8Odw6mU+T ci
+    steps:
+      - uses: actions/checkout@v5
+      - name: shellcheck
+        run: shellcheck setup.sh setup/aliases.sh
+      - name: Check host mode is idempotent
+        run: |
+          home="$(mktemp -d)"
+          args=(--name CI --email ci@example.com --auth-key "$KEY" --signing-key "$KEY"
+                --skip packages,awscli,claude,playwright)
+          HOME="$home" ./setup.sh "${args[@]}"
+          find "$home" -type f -exec md5sum {} + | sort >before.txt
+          HOME="$home" ./setup.sh "${args[@]}" | tee host-second.txt
+          find "$home" -type f -exec md5sum {} + | sort >after.txt
+          diff before.txt after.txt
+          grep -q 'no changes' host-second.txt
+      - name: Check write_block preserves surrounding content
+        run: |
+          home="$(mktemp -d)"
+          printf 'export BEFORE=1\n# >>> bits begin >>>\nSTALE\n# <<< bits end <<< \nexport AFTER=1\n' >"$home/.bashrc"
+          HOME="$home" ./setup.sh --only shell
+          grep -q 'export BEFORE=1' "$home/.bashrc"
+          grep -q 'export AFTER=1' "$home/.bashrc"
+          grep -q 'aliases.sh' "$home/.bashrc"
+          ! grep -q STALE "$home/.bashrc"
+          HOME="$home" ./setup.sh --only shell | grep -q 'no changes'
+      - name: Check devcontainer generation is idempotent
+        run: |
+          target="$(mktemp -d)"
+          args=(--mode devcontainer --target "$target" --name CI --email ci@example.com
+                --auth-key "$KEY" --signing-key "$KEY")
+          ./setup.sh "${args[@]}"
+          bash -n "$target/.devcontainer/bits.sh"
+          ./setup.sh "${args[@]}" | tee devcontainer-second.txt
+          grep -q 'no changes' devcontainer-second.txt
+          sed 's://.*$::' "$target/.devcontainer/devcontainer.json" | python3 -c 'import json,sys; json.load(sys.stdin)'
+      - name: Check the installer modules on a clean runner
+        run: |
+          ./setup.sh --only packages,awscli
+          aws --version
+          ./setup.sh --only packages,awscli | grep -q 'no changes'
