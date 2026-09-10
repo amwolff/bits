@@ -137,7 +137,8 @@ tilde() {
 }
 
 mode_of() {
-  stat -c '%a' "$1" 2>/dev/null || true
+  # BSD stat has no -c, and failing here is silent.
+  stat -c '%a' "$1" 2>/dev/null || stat -f '%Lp' "$1" 2>/dev/null || true
 }
 
 # Installs stdin at PATH with MODE, only when content or mode differs. Never
@@ -657,37 +658,37 @@ json_escape() {
 
 devcontainer_json() {
   local name="$1"
-  cat <<JSON | unexpand -t 2 --first-only
+  cat <<JSON
 // For format details, see https://aka.ms/devcontainer.json. For config options, see the
 // README at: https://github.com/devcontainers/templates/tree/main/src/go .
 {
-  "name": "$(json_escape "$name")",
-  // Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
-  "image": "$(json_escape "$IMAGE")",
-  "mounts": [
-    {
-      "source": "$(json_escape "$VOLUME")",
-      "target": "/home/$(json_escape "$REMOTE_USER")",
-      "type": "volume"
-    }
-  ],
-  // Features to add to the dev container. More info: https://containers.dev/features.
-  "features": {
-    "ghcr.io/devcontainers/features/node:2": {},
-    "ghcr.io/tailscale/codespace/tailscale": {
-      "version": "latest"
-    }
-  },
-  // Use 'forwardPorts' to make a list of ports inside the container available locally.
-  // "forwardPorts": [],
-  // Use 'postCreateCommand' to run commands after the container is created.
-  "postCreateCommand": {
-    "bits": "bash .devcontainer/bits.sh"
-  }
-  // Configure tool-specific properties.
-  // "customizations": {},
-  // Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
-  // "remoteUser": "root"
+	"name": "$(json_escape "$name")",
+	// Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
+	"image": "$(json_escape "$IMAGE")",
+	"mounts": [
+		{
+			"source": "$(json_escape "$VOLUME")",
+			"target": "/home/$(json_escape "$REMOTE_USER")",
+			"type": "volume"
+		}
+	],
+	// Features to add to the dev container. More info: https://containers.dev/features.
+	"features": {
+		"ghcr.io/devcontainers/features/node:2": {},
+		"ghcr.io/tailscale/codespace/tailscale": {
+			"version": "latest"
+		}
+	},
+	// Use 'forwardPorts' to make a list of ports inside the container available locally.
+	// "forwardPorts": [],
+	// Use 'postCreateCommand' to run commands after the container is created.
+	"postCreateCommand": {
+		"bits": "bash .devcontainer/bits.sh"
+	}
+	// Configure tool-specific properties.
+	// "customizations": {},
+	// Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
+	// "remoteUser": "root"
 }
 JSON
 }
@@ -756,7 +757,7 @@ Identity (flag, else BITS_* environment variable):
                         comment field (default: $KEY_NAME)
 
 Mode:
-  --mode host           apply to this machine (default)
+  --mode host           apply to this machine, Linux only (default)
   --mode devcontainer   generate .devcontainer/ in --target
   --target DIR          where to generate (default: $TARGET)
   --image IMAGE         devcontainer image
@@ -893,6 +894,10 @@ fi
 if [[ "$MODE" == "devcontainer" ]]; then
   generate_devcontainer
 else
+  if [[ "$(uname -s)" != Linux ]]; then
+    die "host mode supports Linux only; use --mode devcontainer to generate a .devcontainer/"
+  fi
+
   for module in "${MODULES[@]}"; do
     if selected "$module"; then
       "mod_$module"
