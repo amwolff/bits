@@ -80,7 +80,7 @@ log() {
   case "$status" in
     ok)         color="$C_DIM" ;;
     wrote|set)  color="$C_GREEN" ;;
-    dry|skip|warn) color="$C_YELLOW" ;;
+    dry|skip)   color="$C_YELLOW" ;;
     error)      color="$C_RED" ;;
   esac
   printf '%s: %s%-6s%s %s\n' "$PROGRAM" "$color" "$status" "$C_RESET" "$*"
@@ -105,16 +105,6 @@ need() {
   if [[ $# -lt 2 ]]; then
     die "$1 needs a value"
   fi
-}
-
-# The exec redirect and explicit exits silence the shell's own "Trace/breakpoint
-# trap" report when a wrong-architecture binary dies from a signal.
-runs_ok() {
-  (
-    exec >/dev/null 2>&1
-    "$@" || exit 1
-    exit 0
-  )
 }
 
 as_root() {
@@ -492,18 +482,9 @@ mod_packages() {
 }
 
 mod_awscli() {
-  local healthy=0 version=""
-  if have aws && runs_ok aws --version; then
-    healthy=1
-    version="$(aws --version 2>/dev/null | sed -n 1p)"
-  fi
-
-  if ((healthy)) && ! ((UPGRADE)); then
-    log ok "awscli ($version)"
+  if have aws && ! ((UPGRADE)); then
+    log ok "awscli"
     return 0
-  fi
-  if have aws && ! ((healthy)); then
-    log warn "awscli is present but will not run"
   fi
 
   local arch machine
