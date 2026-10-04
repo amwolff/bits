@@ -32,7 +32,7 @@ AUTH_KEYS_FLAG=()
 MODE="host"
 TARGET="."
 REF="main"
-IMAGE="mcr.microsoft.com/devcontainers/go:2-1.26-trixie"
+IMAGE="mcr.microsoft.com/devcontainers/go:2-1.27-trixie"
 REMOTE_USER="vscode"
 VOLUME=""
 
