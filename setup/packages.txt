@@ -1,5 +1,6 @@
 # Debian package names, one per line, sorted; blank lines and # comments ignored.
 
+apache2-utils
 iputils-ping
 mtr
 tmux

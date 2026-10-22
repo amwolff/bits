@@ -40,7 +40,7 @@ jobs:
         run: |
           home="$(mktemp -d)"
           args=(--name CI --email ci@example.com --auth-key "$KEY" --signing-key "$KEY"
-                --skip packages,awscli,claude,playwright)
+                --skip packages,awscli,gh,difftastic,claude,playwright)
           HOME="$home" ./setup.sh "${args[@]}"
           find "$home" -type f -exec md5sum {} + | sort >before.txt
           HOME="$home" ./setup.sh "${args[@]}" | tee host-second.txt
@@ -69,6 +69,8 @@ jobs:
           sed 's://.*$::' "$target/.devcontainer/devcontainer.json" | python3 -c 'import json,sys; json.load(sys.stdin)'
       - name: Check the installer modules on a clean runner
         run: |
-          ./setup.sh --only packages,awscli
+          ./setup.sh --only packages,awscli,gh,difftastic
           aws --version
-          ./setup.sh --only packages,awscli | grep -q 'no changes'
+          gh --version
+          difft --version
+          ./setup.sh --only packages,awscli,gh,difftastic | grep -q 'no changes'

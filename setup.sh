@@ -10,7 +10,7 @@ REPO_RAW="https://raw.githubusercontent.com/amwolff/bits"
 BEGIN_MARKER="# >>> bits begin >>>"
 END_MARKER="# <<< bits end <<<"
 
-MODULES=(ssh git shell packages awscli claude playwright)
+MODULES=(ssh git shell packages awscli gh difftastic claude playwright)
 
 # Defaults. Precedence is flag > BITS_* environment variable > default.
 NAME="${BITS_NAME:-}"
@@ -313,6 +313,14 @@ selected() {
   return 0
 }
 
+machine_arch() {
+  case "$(uname -m)" in
+    x86_64|amd64)  printf 'x86_64' ;;
+    aarch64|arm64) printf 'aarch64' ;;
+    *)             return 1 ;;
+  esac
+}
+
 # Prefers the key's own comment field, so repeated --auth-key needs no naming.
 key_stem() {
   local comment
@@ -487,16 +495,11 @@ mod_awscli() {
     return 0
   fi
 
-  local arch machine
-  machine="$(uname -m)"
-  case "$machine" in
-    x86_64|amd64)  arch="x86_64" ;;
-    aarch64|arm64) arch="aarch64" ;;
-    *)
-      log skip "awscli (unsupported architecture $machine)"
-      return 0
-      ;;
-  esac
+  local arch
+  if ! arch="$(machine_arch)"; then
+    log skip "awscli (unsupported architecture $(uname -m))"
+    return 0
+  fi
 
   local url="https://awscli.amazonaws.com/awscli-exe-linux-$arch.zip"
 
@@ -525,6 +528,88 @@ mod_awscli() {
     as_root "$tmpdir/aws/install"
     log wrote "awscli (installed)"
   fi
+  changed
+}
+
+# Debian's gh is outdated.
+mod_gh() {
+  if have gh && ! ((UPGRADE)); then
+    log ok "gh"
+    return 0
+  fi
+
+  local tool
+  for tool in apt-get curl; do
+    if ! have "$tool"; then
+      log skip "gh (no $tool)"
+      return 0
+    fi
+  done
+
+  local keyring="/etc/apt/keyrings/githubcli-archive-keyring.gpg"
+  local list="/etc/apt/sources.list.d/github-cli.list"
+
+  if ((DRY_RUN)); then
+    log dry "would add $list and install gh"
+    changed
+    return 0
+  fi
+
+  local tmpdir
+  tmpdir="$(mktemp -d -p "$WORKDIR")"
+  curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg -o "$tmpdir/keyring.gpg"
+  printf 'deb [arch=%s signed-by=%s] https://cli.github.com/packages stable main\n' \
+    "$(dpkg --print-architecture)" "$keyring" >"$tmpdir/github-cli.list"
+  as_root install -d -m 755 "$(dirname "$keyring")" "$(dirname "$list")"
+  as_root install -m 644 "$tmpdir/keyring.gpg" "$keyring"
+  as_root install -m 644 "$tmpdir/github-cli.list" "$list"
+  as_root apt-get update
+  as_root env DEBIAN_FRONTEND=noninteractive apt-get install -y gh
+  log wrote "gh"
+  changed
+}
+
+# Not in Debian.
+mod_difftastic() {
+  if have difft && ! ((UPGRADE)); then
+    log ok "difftastic"
+    return 0
+  fi
+
+  local arch
+  if ! arch="$(machine_arch)"; then
+    log skip "difftastic (unsupported architecture $(uname -m))"
+    return 0
+  fi
+
+  local tool
+  for tool in curl tar; do
+    if ! have "$tool"; then
+      log skip "difftastic (no $tool)"
+      return 0
+    fi
+  done
+
+  local repo="https://github.com/Wilfred/difftastic"
+
+  if ((DRY_RUN)); then
+    log dry "would install difftastic from $repo/releases"
+    changed
+    return 0
+  fi
+
+  # Asset names carry the version, so resolve the latest tag first.
+  local latest tag tmpdir
+  latest="$(curl -fsSLI -o /dev/null -w '%{url_effective}' "$repo/releases/latest")"
+  if [[ "$latest" != */releases/tag/* ]]; then
+    die "difftastic: cannot resolve the latest release (got $latest)"
+  fi
+  tag="${latest##*/}"
+  tmpdir="$(mktemp -d -p "$WORKDIR")"
+  curl -fsSL "$repo/releases/download/$tag/difft-$tag-$arch-unknown-linux-gnu.tar.gz" -o "$tmpdir/difft.tar.gz"
+  tar -xzf "$tmpdir/difft.tar.gz" -C "$tmpdir" difft
+  as_root install -m 755 "$tmpdir/difft" /usr/local/bin/difft
+  log wrote "difftastic ($tag)"
   changed
 }
 
@@ -630,6 +715,10 @@ host_args() {
   printf '%s' "$out"
 }
 
+# Not --add, which appends a duplicate on every start to the persistent home.
+# shellcheck disable=SC2016
+SAFE_DIRECTORY='["git", "config", "--global", "--replace-all", "--fixed-value", "safe.directory", "${containerWorkspaceFolder}", "${containerWorkspaceFolder}"]'
+
 json_escape() {
   local value="$1"
   value="${value//\\/\\\\}"
@@ -665,6 +754,10 @@ devcontainer_json() {
 	// Use 'postCreateCommand' to run commands after the container is created.
 	"postCreateCommand": {
 		"bits": "bash .devcontainer/bits.sh"
+	},
+	// See https://www.kenmuse.com/blog/avoiding-dubious-ownership-in-dev-containers/.
+	"postStartCommand": {
+		"safe-directory": $SAFE_DIRECTORY
 	}
 	// Configure tool-specific properties.
 	// "customizations": {},
@@ -707,6 +800,7 @@ SCRIPT
     log skip "$(tilde "$json") (exists)"
     cat <<SNIPPET
 $PROGRAM:        add to "postCreateCommand": { "bits": "bash .devcontainer/bits.sh" }
+$PROGRAM:        add to "postStartCommand": { "safe-directory": $SAFE_DIRECTORY }
 $PROGRAM:        add to "mounts": { "source": "$VOLUME", "target": "/home/$REMOTE_USER", "type": "volume" }
 SNIPPET
     return 0

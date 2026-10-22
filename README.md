@@ -14,7 +14,7 @@ curl -fsSL https://raw.githubusercontent.com/amwolff/bits/main/setup.sh | bash -
 
 Idempotent — `--dry-run` shows what would change.
 `--mode devcontainer --target .` writes a `.devcontainer/` that runs it on create instead.
-The `packages` and `awscli` modules install through `sudo`.
+The `packages`, `awscli`, `gh` and `difftastic` modules install through `sudo`.
 See `setup.sh --help` for the rest.
 
 The lists it installs — `setup/aliases.sh` and `setup/packages.txt` — are read from a checkout, else fetched at `--ref`.
