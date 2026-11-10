@@ -94,9 +94,25 @@ func Group(name, desc string, entries ...Entry) Entry {
 	return groupEntry{name: name, desc: desc, entries: entries}
 }
 
+// EnvPrefix is prepended, if set, to the environment variable names
+// that back flags, e.g. ACME_MY_PROG_LOG_LEVEL instead of
+// MY_PROG_LOG_LEVEL for EnvPrefix "acme". It is normalized like program
+// and flag names. Set it before calling Main.
+var EnvPrefix string
+
 // envName maps a program or flag name to an environment variable name.
 func envName(name string) string {
 	return strings.ToUpper(strings.ReplaceAll(name, "-", "_"))
+}
+
+// envPrefix returns the prefix of the environment variable names that
+// back the flags of the named program.
+func envPrefix(global, name string) string {
+	prefix := envName(name) + "_"
+	if global != "" {
+		prefix = envName(global) + "_" + prefix
+	}
+	return prefix
 }
 
 // Main runs the program with the given name and entries.
@@ -113,13 +129,14 @@ func main(name string, entries ...Entry) bool {
 	stdout := os.Stdout
 	g := Global{stdout: stdout}
 
-	prefix := envName(name) + "_"
+	prefix := envPrefix(EnvPrefix, name)
 
 	ok, err := clingy.Environment{
 		Name:   name,
 		Stdout: stdout,
 		// Dynamic backs flags the command line does not set with
-		// environment variables, e.g. --log-level with MY_PROG_LOG_LEVEL.
+		// environment variables, e.g. --log-level with MY_PROG_LOG_LEVEL
+		// (ACME_MY_PROG_LOG_LEVEL with EnvPrefix "acme").
 		Dynamic: func(flagName string) ([]string, error) {
 			if val := os.Getenv(prefix + envName(flagName)); val != "" {
 				return []string{val}, nil
